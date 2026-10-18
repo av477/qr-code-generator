@@ -27,8 +27,8 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          python -m coverage run --source=main -m unittest discover -s tests -v
+          python -m coverage run --source=main -m unittest discover -s tests -p "test_main.py" -v
           python -m coverage report --fail-under=100
 
-      - name: Build Docker image
-        run: docker build -t qr-code-generator:${{ github.sha }} .
+      - name: Build and test Docker image
+        run: python -m unittest discover -s tests -p "test_dockerfile.py" -v

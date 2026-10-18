@@ -69,3 +69,11 @@ python -m coverage report --fail-under=100
 ```
 
 GitHub Actions runs the same tests and coverage check on pushes and pull requests, then builds the Docker image. The workflow fails if `main.py` coverage is below 100%.
+
+The Dockerfile integration tests require Docker. Run them separately with:
+
+```powershell
+python -m unittest discover -s tests -p "test_dockerfile.py" -v
+```
+
+They build the image, verify it runs as the non-root `av477` user, and check that a container can save a valid PNG to a mounted output directory. These tests are also run in GitHub Actions.
