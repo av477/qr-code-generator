@@ -1,12 +1,26 @@
 import sys
-import qrcode
-from dotenv import load_dotenv
 import logging.config
 from pathlib import Path
 import os
 import argparse
 from datetime import datetime
-import validators  # Import the validators package
+from urllib.parse import urlparse
+
+try:
+    import qrcode
+except ModuleNotFoundError:
+    qrcode = None
+
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    def load_dotenv(*_args, **_kwargs):
+        return False
+
+try:
+    import validators
+except ModuleNotFoundError:
+    validators = None
 
 # Load environment variables
 load_dotenv()
@@ -33,13 +47,26 @@ def create_directory(path: Path):
         exit(1)
 
 def is_valid_url(url):
-    if validators.url(url):
-        return True
-    else:
+    if not isinstance(url, str) or not url.strip():
         logging.error(f"Invalid URL provided: {url}")
         return False
 
+    if validators is not None:
+        if validators.url(url):
+            return True
+    else:
+        parsed = urlparse(url)
+        if parsed.scheme in {'http', 'https'} and parsed.netloc:
+            return True
+
+    logging.error(f"Invalid URL provided: {url}")
+    return False
+
 def generate_qr_code(data, path, fill_color='red', back_color='white'):
+    if qrcode is None:
+        logging.error("The 'qrcode' package is required. Install dependencies with: pip install -r requirements.txt")
+        return
+
     if not is_valid_url(data):
         return  # Exit the function if the URL is not valid
 
@@ -59,7 +86,7 @@ def generate_qr_code(data, path, fill_color='red', back_color='white'):
 def main():
     # Set up command-line argument parsing
     parser = argparse.ArgumentParser(description='Generate a QR code.')
-    parser.add_argument('--url', help='The URL to encode in the QR code', default='https://github.com/kaw393939')
+    parser.add_argument('--url', help='The URL to encode in the QR code', default='https://github.com/av477')
     args = parser.parse_args()
 
     # Initial logging setup
