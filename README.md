@@ -60,12 +60,12 @@ The container runs the generator once and exits. The generated PNG remains in th
 
 ## Tests and coverage
 
-Install the application and development dependencies, then run the tests with a 90% minimum line-coverage requirement:
+Install the application and development dependencies, then run the tests with a 100% line-coverage requirement for `main.py`:
 
 ```powershell
 python -m pip install -r requirements-dev.txt
 python -m coverage run --source=main -m unittest discover -s tests -v
-python -m coverage report --fail-under=90
+python -m coverage report --fail-under=100
 ```
 
-GitHub Actions runs the same tests and coverage check on pushes and pull requests, then builds the Docker image. The workflow fails if `main.py` coverage is below 90%.
+GitHub Actions runs the same tests and coverage check on pushes and pull requests, then builds the Docker image. The workflow fails if `main.py` coverage is below 100%.
