@@ -5,7 +5,7 @@ A command-line Python application that creates a PNG QR code for a URL. Generate
 ## Requirements
 
 - Python 3.12 or later
-- Docker (for containerized use)
+- Docker ( for containerized use)
 
 ## Run locally
 
@@ -39,27 +39,41 @@ The application reads these optional environment variables (a `.env` file is als
 
 Build the image:
 
+```powershell
 docker build -t qr-code-generator .
+```
+
+```powershell
 docker run -d --name qr-generator qr-code-generator
+```
 
 Run it with a URL and mount the output directory so the generated image is available on the host:
 
+```powershell
 New-Item -ItemType Directory -Force .\qr_codes | Out-Null
 docker run --rm `
   --mount "type=bind,source=$((Get-Location).Path)\qr_codes,target=/app/qr_codes" `
   qr-code-generator --url https://example.com
-
+```
 
 The container runs the generator once and exits. The generated PNG remains in the host's `qr_codes` directory. If no URL is passed, the image uses the default URL.
 
 ## Tests and coverage
 
-Install the application and development dependencies, then run the tests with a 90% minimum line-coverage requirement:
+Install the application and development dependencies, then run the tests with a 100% line-coverage requirement for `main.py`:
 
 ```powershell
 python -m pip install -r requirements-dev.txt
 python -m coverage run --source=main -m unittest discover -s tests -v
-python -m coverage report --fail-under=90
+python -m coverage report --fail-under=100
 ```
 
-GitHub Actions runs the same tests and coverage check on pushes and pull requests, then builds the Docker image. The workflow fails if `main.py` coverage is below 90%.
+GitHub Actions runs the same tests and coverage check on pushes and pull requests, then builds the Docker image. The workflow fails if `main.py` coverage is below 100%.
+
+The Dockerfile integration tests require Docker. Run them separately with:
+
+```powershell
+python -m unittest discover -s tests -p "test_dockerfile.py" -v
+```
+
+They build the image, verify it runs as the non-root `av477` user, and check that a container can save a valid PNG to a mounted output directory. These tests are also run in GitHub Actions.

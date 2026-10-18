@@ -1,8 +1,10 @@
 import logging
+import importlib
 import os
 import runpy
 import tempfile
 import unittest
+import builtins
 from datetime import datetime as DateTime
 from pathlib import Path
 from unittest.mock import patch
@@ -45,6 +47,28 @@ class MainTests(unittest.TestCase):
     def test_url_validation_works_without_validators_package(self):
         with patch.object(main, "validators", None):
             self.assertTrue(main.is_valid_url("https://example.com"))
+
+    def test_optional_dependency_import_fallbacks(self):
+        original_import = builtins.__import__
+
+        for missing_dependency in ("qrcode", "dotenv", "validators"):
+            def import_without_dependency(name, *args, **kwargs):
+                if name == missing_dependency:
+                    raise ModuleNotFoundError(name=name)
+                return original_import(name, *args, **kwargs)
+
+            with self.subTest(dependency=missing_dependency):
+                with patch("builtins.__import__", side_effect=import_without_dependency):
+                    importlib.reload(main)
+
+                if missing_dependency == "qrcode":
+                    self.assertIsNone(main.qrcode)
+                elif missing_dependency == "dotenv":
+                    self.assertFalse(main.load_dotenv())
+                else:
+                    self.assertIsNone(main.validators)
+
+        importlib.reload(main)
 
     def test_generate_qr_code_writes_png_for_valid_url(self):
         with tempfile.TemporaryDirectory() as temp_dir:
