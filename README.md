@@ -5,7 +5,7 @@ A command-line Python application that creates a PNG QR code for a URL. Generate
 ## Requirements
 
 - Python 3.12 or later
-- Docker (for containerized use)
+- Docker ( for containerized use)
 
 ## Run locally
 
@@ -39,16 +39,22 @@ The application reads these optional environment variables (a `.env` file is als
 
 Build the image:
 
+```powershell
 docker build -t qr-code-generator .
+```
+
+```powershell
 docker run -d --name qr-generator qr-code-generator
+```
 
 Run it with a URL and mount the output directory so the generated image is available on the host:
 
+```powershell
 New-Item -ItemType Directory -Force .\qr_codes | Out-Null
 docker run --rm `
   --mount "type=bind,source=$((Get-Location).Path)\qr_codes,target=/app/qr_codes" `
   qr-code-generator --url https://example.com
-
+```
 
 The container runs the generator once and exits. The generated PNG remains in the host's `qr_codes` directory. If no URL is passed, the image uses the default URL.
 
