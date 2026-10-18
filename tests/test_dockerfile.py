@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import tempfile
@@ -43,6 +44,7 @@ class DockerfileTests(unittest.TestCase):
 
     def test_container_generates_png_in_mounted_output_directory(self):
         with tempfile.TemporaryDirectory() as output_dir:
+            os.chmod(output_dir, 0o777)
             host_output_dir = Path(output_dir).resolve().as_posix()
             result = subprocess.run(
                 [
